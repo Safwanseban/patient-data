@@ -41,7 +41,7 @@ func InsertPatient(c *gin.Context) {
 }
 func GEtPatientnData(c *gin.Context) {
 
-	var patient models.Patient
+	var patient []models.Patient
 	record := configs.Db.Find(&patient)
 	if record.Error != nil {
 
@@ -59,18 +59,25 @@ func GEtPatientnData(c *gin.Context) {
 	})
 
 }
+var pupdate struct{
+	Patient_name string `json:"patient_name"`
+	Age          uint   `json:"age"`
+	Disease      string `json:"disease"`
 
+}
 func UpdatePatient(c *gin.Context) {
 	var patient models.Patient
 	id := c.Query("id")
 	ID, _ := strconv.Atoi(id)
 
-	if err := c.ShouldBindJSON(&patient); err != nil {
+	if err := c.ShouldBindJSON(&pupdate); err != nil {
 
 		c.JSON(500, gin.H{"err": err.Error()})
+		c.Abort()
+		return
 	}
 
-	record := configs.Db.Raw("update patients set patient_name=?,age=?,disease=? where id=?", patient.Patient_name, patient.Age, patient.Disease, ID).Scan(&patient)
+	record := configs.Db.Raw("update patients set patient_name=?,age=?,disease=? where id=?", pupdate.Patient_name, pupdate.Age, pupdate.Disease, ID).Scan(&patient)
 
 	if record.Error != nil {
 		c.JSON(500, gin.H{
@@ -92,8 +99,8 @@ func DeleteFromPatient(c *gin.Context) {
 	id := c.Query("id")
 	ID, _ := strconv.Atoi(id)
 
-	
-	record := configs.Db.Raw("delete from patient where id=?", ID).Scan(&patient)
+
+	record := configs.Db.Raw("delete from patients where id=?", ID).Scan(&patient)
 	if record.Error != nil {
 		c.JSON(404, gin.H{
 
